@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/lujjjh/gitig/git"
+	"github.com/lujjjh/gitig/git/smarthttp"
 )
 
 func main() {
-	if err := http.ListenAndServe(":3000", new(git.SmartHTTPHandler)); err != nil {
+	if err := http.ListenAndServe(":3000", new(smarthttp.Handler)); err != nil {
 		log.Fatal(err)
 	}
 }

@@ -2,6 +2,7 @@ package packetline
 
 import (
 	"errors"
+	"fmt"
 	"io"
 )
 
@@ -40,19 +41,23 @@ func (w *Writer) write(data []byte) {
 	}
 }
 
-func (w *Writer) WriteFlushPacket() error {
+func (w *Writer) Err() error {
+	return w.err
+}
+
+func (w *Writer) WriteFlushPacket() *Writer {
 	w.write(flushPacketHeader)
-	return w.err
+	return w
 }
 
-func (w *Writer) WriteDelimiterPacket() error {
+func (w *Writer) WriteDelimiterPacket() *Writer {
 	w.write(delimiterPacketHeader)
-	return w.err
+	return w
 }
 
-func (w *Writer) WriteResponseEndPacket() error {
+func (w *Writer) WriteResponseEndPacket() *Writer {
 	w.write(responseEndPacketHeader)
-	return w.err
+	return w
 }
 
 func (w *Writer) packetHeader(size int) [packetHeaderSize]byte {
@@ -71,12 +76,18 @@ func (w *Writer) writePacketHeader(size int) {
 	w.write(header[:])
 }
 
-func (w *Writer) WritePacket(data []byte) error {
+func (w *Writer) WritePacket(data []byte) *Writer {
 	size := packetHeaderSize + len(data)
 	if size > MaxPacketLineLength {
-		return ErrMaxPacketLineLengthExceeded
+		w.err = ErrMaxPacketLineLengthExceeded
+		return w
 	}
 	w.writePacketHeader(size)
 	w.write(data)
-	return w.err
+	return w
+}
+
+func (w *Writer) WritePacketFmt(format string, a ...interface{}) *Writer {
+	// TODO: faster conversion from string to readonly []byte?
+	return w.WritePacket([]byte(fmt.Sprintf(format, a...)))
 }

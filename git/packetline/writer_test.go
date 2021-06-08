@@ -9,8 +9,8 @@ import (
 	"github.com/lujjjh/gitig/git/packetline"
 )
 
-func assertNoError(t *testing.T, err error) {
-	if err != nil {
+func assertNoError(t *testing.T, w *packetline.Writer) {
+	if err := w.Err(); err != nil {
 		t.Log(debug.Stack())
 		t.Fatalf("no error expected, got: %v", err)
 	}
@@ -78,7 +78,7 @@ func TestWriter(t *testing.T) {
 func TestWriterMaxLengthExceeded(t *testing.T) {
 	var data [65517]byte
 	w := packetline.NewWriter(io.Discard)
-	if err := w.WritePacket(data[:]); err != packetline.ErrMaxPacketLineLengthExceeded {
+	if err := w.WritePacket(data[:]).Err(); err != packetline.ErrMaxPacketLineLengthExceeded {
 		t.Errorf("expected: ErrMaxPacketLineLengthExceeded, got: %v", err)
 	}
 }
